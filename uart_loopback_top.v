@@ -1,52 +1,35 @@
-//****************************************Copyright (c)***********************************//
-//Ô­×Ó¸çÔÚÏß½ÌÑ§Æ½Ì¨£ºwww.yuanzige.com
-//¼¼ÊõÖ§³Ö£ºwww.openedv.com
-//ÌÔ±¦µêÆÌ£ºhttp://openedv.taobao.com 
-//¹Ø×¢Î¢ĞÅ¹«ÖÚÆ½Ì¨Î¢ĞÅºÅ£º"ÕıµãÔ­×Ó"£¬Ãâ·Ñ»ñÈ¡ZYNQ & FPGA & STM32 & LINUX×ÊÁÏ¡£
-//°æÈ¨ËùÓĞ£¬µÁ°æ±Ø¾¿¡£
-//Copyright(C) ÕıµãÔ­×Ó 2018-2028
-//All rights reserved	                               
-//----------------------------------------------------------------------------------------
+
 // File name:           uart_loopback_top
-// Last modified Date:  2019/10/9 9:56:36
-// Last Version:        V1.0
-// Descriptions:        ¿ª·¢°åÍ¨¹ı´®¿Ú½ÓÊÕPC·¢ËÍµÄ×Ö·û£¬È»ºó½«ÊÕµ½µÄ×Ö·û·¢ËÍ¸øPC
-//----------------------------------------------------------------------------------------
-// Created by:          ÕıµãÔ­×Ó
-// Created date:        2019/10/9 9:56:36
-// Version:             V1.0
-// Descriptions:        The original version
-//
-//----------------------------------------------------------------------------------------
+// Descriptions:        å¼€å‘æ¿é€šè¿‡ä¸²å£æ¥æ”¶PCå‘é€çš„å­—ç¬¦ï¼Œç„¶åå°†æ”¶åˆ°çš„å­—ç¬¦å‘é€ç»™PC
 //****************************************************************************************//
 
 module uart_loopback_top(
-    input           sys_clk,            //Íâ²¿50MÊ±ÖÓ
-    input           sys_rst_n,          //Íâ²¿¸´Î»ĞÅºÅ£¬µÍÓĞĞ§
-    input           uart_rxd,           //UART½ÓÊÕ¶Ë¿Ú
-    output          uart_txd            //UART·¢ËÍ¶Ë¿Ú
+    input           sys_clk,            //å¤–éƒ¨50Mæ—¶é’Ÿ
+    input           sys_rst_n,          //å¤–éƒ¨å¤ä½ä¿¡å·ï¼Œä½æœ‰æ•ˆ
+    input           uart_rxd,           //UARTæ¥æ”¶ç«¯å£
+    output          uart_txd            //UARTå‘é€ç«¯å£
     );
 
 //parameter define
-parameter  CLK_FREQ = 200000000;         //¶¨ÒåÏµÍ³Ê±ÖÓÆµÂÊ
-parameter  UART_BPS = 115200;           //¶¨Òå´®¿Ú²¨ÌØÂÊ
+parameter  CLK_FREQ = 200000000;         //å®šä¹‰ç³»ç»Ÿæ—¶é’Ÿé¢‘ç‡
+parameter  UART_BPS = 115200;           //å®šä¹‰ä¸²å£æ³¢ç‰¹ç‡
 parameter    DATAWIDTH = 16;
 parameter    CNT_NUM   = 2;
 //wire define   
-wire       uart_recv_done;              //UART½ÓÊÕÍê³É
-wire [DATAWIDTH-1:0] uart_recv_data;              //UART½ÓÊÕÊı¾İ
-wire       uart_send_en;                //UART·¢ËÍÊ¹ÄÜ
-wire [DATAWIDTH-1:0] uart_send_data;              //UART·¢ËÍÊı¾İ
-wire       uart_tx_busy;                //UART·¢ËÍÃ¦×´Ì¬±êÖ¾
+wire       uart_recv_done;              //UARTæ¥æ”¶å®Œæˆ
+wire [DATAWIDTH-1:0] uart_recv_data;              //UARTæ¥æ”¶æ•°æ®
+wire       uart_send_en;                //UARTå‘é€ä½¿èƒ½
+wire [DATAWIDTH-1:0] uart_send_data;              //UARTå‘é€æ•°æ®
+wire       uart_tx_busy;                //UARTå‘é€å¿™çŠ¶æ€æ ‡å¿—
 
 //*****************************************************
 //**                    main code
 //*****************************************************
 
-//´®¿Ú½ÓÊÕÄ£¿é     
+//ä¸²å£æ¥æ”¶æ¨¡å—     
 uart_recv #(                          
-    .CLK_FREQ       (CLK_FREQ),         //ÉèÖÃÏµÍ³Ê±ÖÓÆµÂÊ
-    .UART_BPS       (UART_BPS) ,        //ÉèÖÃ´®¿Ú½ÓÊÕ²¨ÌØÂÊ
+    .CLK_FREQ       (CLK_FREQ),         //è®¾ç½®ç³»ç»Ÿæ—¶é’Ÿé¢‘ç‡
+    .UART_BPS       (UART_BPS) ,        //è®¾ç½®ä¸²å£æ¥æ”¶æ³¢ç‰¹ç‡
     .DATAWIDTH      (DATAWIDTH),
     .CNT_NUM        (CNT_NUM  )
     )
@@ -59,10 +42,10 @@ u_uart_recv(
     .uart_all_data      (uart_recv_data)
     );
 
-//´®¿Ú·¢ËÍÄ£¿é    
+//ä¸²å£å‘é€æ¨¡å—    
 uart_send #(                          
-    .CLK_FREQ       (CLK_FREQ),         //ÉèÖÃÏµÍ³Ê±ÖÓÆµÂÊ
-    .UART_BPS       (UART_BPS) ,        //ÉèÖÃ´®¿Ú½ÓÊÕ²¨ÌØÂÊ
+    .CLK_FREQ       (CLK_FREQ),         //è®¾ç½®ç³»ç»Ÿæ—¶é’Ÿé¢‘ç‡
+    .UART_BPS       (UART_BPS) ,        //è®¾ç½®ä¸²å£æ¥æ”¶æ³¢ç‰¹ç‡
     .DATAWIDTH      (DATAWIDTH),
     .CNT_NUM        (CNT_NUM  )
     )
@@ -76,7 +59,7 @@ u_uart_send(
     .uart_txd       (uart_txd)
     );
     
-//´®¿Ú»·»ØÄ£¿é    
+//ä¸²å£ç¯å›æ¨¡å—    
 uart_loop #(                          
         .DATAWIDTH      (DATAWIDTH)
     )
@@ -84,12 +67,12 @@ uart_loop #(
     .sys_clk        (sys_clk),             
     .sys_rst_n      (sys_rst_n),           
    
-    .recv_done      (uart_recv_done),   //½ÓÊÕÒ»Ö¡Êı¾İÍê³É±êÖ¾ĞÅºÅ
-    .recv_data      (uart_recv_data),   //½ÓÊÕµÄÊı¾İ
+    .recv_done      (uart_recv_done),   //æ¥æ”¶ä¸€å¸§æ•°æ®å®Œæˆæ ‡å¿—ä¿¡å·
+    .recv_data      (uart_recv_data),   //æ¥æ”¶çš„æ•°æ®
    
-    .tx_busy        (uart_tx_busy),     //·¢ËÍÃ¦×´Ì¬±êÖ¾      
-    .send_en        (uart_send_en),     //·¢ËÍÊ¹ÄÜĞÅºÅ
-    .send_data      (uart_send_data)    //´ı·¢ËÍÊı¾İ
+    .tx_busy        (uart_tx_busy),     //å‘é€å¿™çŠ¶æ€æ ‡å¿—      
+    .send_en        (uart_send_en),     //å‘é€ä½¿èƒ½ä¿¡å·
+    .send_data      (uart_send_data)    //å¾…å‘é€æ•°æ®
     );
     
 endmodule
