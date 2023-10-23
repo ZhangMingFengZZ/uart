@@ -1,38 +1,20 @@
-//****************************************Copyright (c)***********************************//
-//Ô­×Ó¸çÔÚÏß½ÌÑ§Æ½Ì¨£ºwww.yuanzige.com
-//¼¼ÊõÖ§³Ö£ºwww.openedv.com
-//ÌÔ±¦µêÆÌ£ºhttp://openedv.taobao.com 
-//¹Ø×¢Î¢ĞÅ¹«ÖÚÆ½Ì¨Î¢ĞÅºÅ£º"ÕıµãÔ­×Ó"£¬Ãâ·Ñ»ñÈ¡ZYNQ & FPGA & STM32 & LINUX×ÊÁÏ¡£
-//°æÈ¨ËùÓĞ£¬µÁ°æ±Ø¾¿¡£
-//Copyright(C) ÕıµãÔ­×Ó 2018-2028
-//All rights reserved	                               
-//----------------------------------------------------------------------------------------
+
 // File name:           uart_loop
-// Last modified Date:  2019/10/8 17:25:36
-// Last Version:        V1.1
-// Descriptions:        ´®¿ÚÊı¾İ»·»ØÄ£¿é
-//----------------------------------------------------------------------------------------
-// Created by:          ÕıµãÔ­×Ó
-// Created date:        2019/10/8 17:25:36
-// Version:             V1.0
-// Descriptions:        The original version
-//
-//----------------------------------------------------------------------------------------
 //****************************************************************************************//
 
 module uart_loop#(
     parameter   DATAWIDTH  =16
 )
 (
-    input	         sys_clk,                   //ÏµÍ³Ê±ÖÓ
-    input            sys_rst_n,                 //ÏµÍ³¸´Î»£¬µÍµçÆ½ÓĞĞ§
+    input	         sys_clk,                   //ç³»ç»Ÿæ—¶é’Ÿ
+    input            sys_rst_n,                 //ç³»ç»Ÿå¤ä½ï¼Œä½ç”µå¹³æœ‰æ•ˆ
      
-    input            recv_done,                 //½ÓÊÕÒ»Ö¡Êı¾İÍê³É±êÖ¾
-    input      [DATAWIDTH-1:0] recv_data,                 //½ÓÊÕµÄÊı¾İ
+    input            recv_done,                 //æ¥æ”¶ä¸€å¸§æ•°æ®å®Œæˆæ ‡å¿—
+    input      [DATAWIDTH-1:0] recv_data,                 //æ¥æ”¶çš„æ•°æ®
      
-    input            tx_busy,                   //·¢ËÍÃ¦×´Ì¬±êÖ¾      
-    output reg       send_en,                   //·¢ËÍÊ¹ÄÜĞÅºÅ
-    output reg [DATAWIDTH-1:0] send_data                  //´ı·¢ËÍÊı¾İ
+    input            tx_busy,                   //å‘é€å¿™çŠ¶æ€æ ‡å¿—      
+    output reg       send_en,                   //å‘é€ä½¿èƒ½ä¿¡å·
+    output reg [DATAWIDTH-1:0] send_data                  //å¾…å‘é€æ•°æ®
     );
 
 //reg define
@@ -47,10 +29,10 @@ wire recv_done_flag;
 //**                    main code
 //*****************************************************
 
-//²¶»ñrecv_doneÉÏÉıÑØ£¬µÃµ½Ò»¸öÊ±ÖÓÖÜÆÚµÄÂö³åĞÅºÅ
+//æ•è·recv_doneä¸Šå‡æ²¿ï¼Œå¾—åˆ°ä¸€ä¸ªæ—¶é’Ÿå‘¨æœŸçš„è„‰å†²ä¿¡å·
 assign recv_done_flag = (~recv_done_d1) & recv_done_d0;
                                                  
-//¶Ô·¢ËÍÊ¹ÄÜĞÅºÅrecv_doneÑÓ³ÙÁ½¸öÊ±ÖÓÖÜÆÚ
+//å¯¹å‘é€ä½¿èƒ½ä¿¡å·recv_doneå»¶è¿Ÿä¸¤ä¸ªæ—¶é’Ÿå‘¨æœŸ
 always @(posedge sys_clk or negedge sys_rst_n) begin         
     if (!sys_rst_n) begin
         recv_done_d0 <= 1'b0;                                  
@@ -62,7 +44,7 @@ always @(posedge sys_clk or negedge sys_rst_n) begin
     end
 end
 
-//ÅĞ¶Ï½ÓÊÕÍê³ÉĞÅºÅ£¬²¢ÔÚ´®¿Ú·¢ËÍÄ£¿é¿ÕÏĞÊ±¸ø³ö·¢ËÍÊ¹ÄÜĞÅºÅ
+//åˆ¤æ–­æ¥æ”¶å®Œæˆä¿¡å·ï¼Œå¹¶åœ¨ä¸²å£å‘é€æ¨¡å—ç©ºé—²æ—¶ç»™å‡ºå‘é€ä½¿èƒ½ä¿¡å·
 always @(posedge sys_clk or negedge sys_rst_n) begin         
     if (!sys_rst_n) begin
         tx_ready  <= 1'b0; 
@@ -70,14 +52,14 @@ always @(posedge sys_clk or negedge sys_rst_n) begin
         send_data <= 0;
     end                                                      
     else begin                                               
-        if(recv_done_flag)begin                 //¼ì²â´®¿Ú½ÓÊÕµ½Êı¾İ
-            tx_ready  <= 1'b1;                  //×¼±¸Æô¶¯·¢ËÍ¹ı³Ì
+        if(recv_done_flag)begin                 //æ£€æµ‹ä¸²å£æ¥æ”¶åˆ°æ•°æ®
+            tx_ready  <= 1'b1;                  //å‡†å¤‡å¯åŠ¨å‘é€è¿‡ç¨‹
             send_en   <= 1'b0;
-            send_data <= recv_data;             //¼Ä´æ´®¿Ú½ÓÊÕµÄÊı¾İ
+            send_data <= recv_data;             //å¯„å­˜ä¸²å£æ¥æ”¶çš„æ•°æ®
         end
-        else if(tx_ready && (~tx_busy)) begin   //¼ì²â´®¿Ú·¢ËÍÄ£¿é¿ÕÏĞ
-            tx_ready <= 1'b0;                   //×¼±¸¹ı³Ì½áÊø
-            send_en  <= 1'b1;                   //À­¸ß·¢ËÍÊ¹ÄÜĞÅºÅ
+        else if(tx_ready && (~tx_busy)) begin   //æ£€æµ‹ä¸²å£å‘é€æ¨¡å—ç©ºé—²
+            tx_ready <= 1'b0;                   //å‡†å¤‡è¿‡ç¨‹ç»“æŸ
+            send_en  <= 1'b1;                   //æ‹‰é«˜å‘é€ä½¿èƒ½ä¿¡å·
         end
     end
 end
