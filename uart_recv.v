@@ -1,56 +1,39 @@
-//****************************************Copyright (c)***********************************//
-//Ô­×Ó¸çÔÚÏß½ÌÑ§Æ½Ì¨£ºwww.yuanzige.com
-//¼¼ÊõÖ§³Ö£ºwww.openedv.com
-//ÌÔ±¦µêÆÌ£ºhttp://openedv.taobao.com 
-//¹Ø×¢Î¢ĞÅ¹«ÖÚÆ½Ì¨Î¢ĞÅºÅ£º"ÕıµãÔ­×Ó"£¬Ãâ·Ñ»ñÈ¡ZYNQ & FPGA & STM32 & LINUX×ÊÁÏ¡£
-//°æÈ¨ËùÓĞ£¬µÁ°æ±Ø¾¿¡£
-//Copyright(C) ÕıµãÔ­×Ó 2018-2028
-//All rights reserved	                               
-//----------------------------------------------------------------------------------------
+
 // File name:           uart_recv
-// Last modified Date:  2019/10/9 9:56:36
-// Last Version:        V1.1
-// Descriptions:        UART´®¿Ú½ÓÊÕÄ£¿é
-//----------------------------------------------------------------------------------------
-// Created by:          ÕıµãÔ­×Ó
-// Created date:        2019/10/9 9:56:36
-// Version:             V1.0
-// Descriptions:        The original version
-//
-//----------------------------------------------------------------------------------------
+// Descriptions:        UARTä¸²å£æ¥æ”¶æ¨¡å—
 //****************************************************************************************//
 
 module uart_recv#(
-    parameter  CLK_FREQ = 50000000,                //ÏµÍ³Ê±ÖÓÆµÂÊ
-    parameter  UART_BPS = 9600,                    //´®¿Ú²¨ÌØÂÊ
+    parameter  CLK_FREQ = 50000000,                //ç³»ç»Ÿæ—¶é’Ÿé¢‘ç‡
+    parameter  UART_BPS = 9600,                    //ä¸²å£æ³¢ç‰¹ç‡
     parameter   DATAWIDTH  =16,
     parameter   CNT_NUM    =2
 )
 (
-    input			  sys_clk,                  //ÏµÍ³Ê±ÖÓ
-    input             sys_rst_n,                //ÏµÍ³¸´Î»£¬µÍµçÆ½ÓĞĞ§
+    input			  sys_clk,                  //ç³»ç»Ÿæ—¶é’Ÿ
+    input             sys_rst_n,                //ç³»ç»Ÿå¤ä½ï¼Œä½ç”µå¹³æœ‰æ•ˆ
     
-    input             uart_rxd,                 //UART½ÓÊÕ¶Ë¿Ú
-//    output  reg       uart_done,                //½ÓÊÕÒ»Ö¡Êı¾İÍê³É±êÖ¾
-//    output  reg       rx_flag,                  //½ÓÊÕ¹ı³Ì±êÖ¾ĞÅºÅ
-//    output  reg [ 3:0] rx_cnt,                  //½ÓÊÕÊı¾İ¼ÆÊıÆ÷
+    input             uart_rxd,                 //UARTæ¥æ”¶ç«¯å£
+//    output  reg       uart_done,                //æ¥æ”¶ä¸€å¸§æ•°æ®å®Œæˆæ ‡å¿—
+//    output  reg       rx_flag,                  //æ¥æ”¶è¿‡ç¨‹æ ‡å¿—ä¿¡å·
+//    output  reg [ 3:0] rx_cnt,                  //æ¥æ”¶æ•°æ®è®¡æ•°å™¨
 //    output  reg [ 7:0] rxdata,
-//    output  reg [7:0] uart_data                 //½ÓÊÕµÄÊı¾İ
+//    output  reg [7:0] uart_data                 //æ¥æ”¶çš„æ•°æ®
     output  reg   uart_all_done,                        
     output  reg   [DATAWIDTH-1:0]    uart_all_data
     );
     
 //parameter define
-/*parameter  CLK_FREQ = 50000000;                //ÏµÍ³Ê±ÖÓÆµÂÊ
-parameter  UART_BPS = 9600;                    //´®¿Ú²¨ÌØÂÊ
+/*parameter  CLK_FREQ = 50000000;                //ç³»ç»Ÿæ—¶é’Ÿé¢‘ç‡
+parameter  UART_BPS = 9600;                    //ä¸²å£æ³¢ç‰¹ç‡
 parameter   DATAWIDTH  =16;
 parameter   CNT_NUM    =2;*/
-localparam  BPS_CNT  = CLK_FREQ/UART_BPS;       //ÎªµÃµ½Ö¸¶¨²¨ÌØÂÊ£¬
-                                                //ĞèÒª¶ÔÏµÍ³Ê±ÖÓ¼ÆÊıBPS_CNT´Î
+localparam  BPS_CNT  = CLK_FREQ/UART_BPS;       //ä¸ºå¾—åˆ°æŒ‡å®šæ³¢ç‰¹ç‡ï¼Œ
+                                                //éœ€è¦å¯¹ç³»ç»Ÿæ—¶é’Ÿè®¡æ•°BPS_CNTæ¬¡
 //reg define
 reg        uart_rxd_d0;
 reg        uart_rxd_d1;
-reg [15:0] clk_cnt;                              //ÏµÍ³Ê±ÖÓ¼ÆÊıÆ÷
+reg [15:0] clk_cnt;                              //ç³»ç»Ÿæ—¶é’Ÿè®¡æ•°å™¨
 
 reg       uart_done;
 reg       rx_flag;  
@@ -107,7 +90,7 @@ always @(*) begin
     if (!sys_rst_n) begin                               
         uart_all_data = 0;
     end
-    else if(rx_cnt == 4'd9 && rx_flag==1 && num_cnt == CNT_NUM-1) begin               //½ÓÊÕÊı¾İ¼ÆÊıÆ÷¼ÆÊıµ½Í£Ö¹Î»Ê±           
+    else if(rx_cnt == 4'd9 && rx_flag==1 && num_cnt == CNT_NUM-1) begin               //æ¥æ”¶æ•°æ®è®¡æ•°å™¨è®¡æ•°åˆ°åœæ­¢ä½æ—¶           
         uart_all_data = temp_data;
     end
     else begin
@@ -137,11 +120,11 @@ always @(posedge sys_clk or negedge sys_rst_n) begin
     if (!sys_rst_n)                                  
         recv_flag <= 1'b0;
     else begin
-        if(start_flag)                          //¼ì²âµ½ÆğÊ¼Î»
-            recv_flag <= 1'b1;                    //½øÈë½ÓÊÕ¹ı³Ì£¬±êÖ¾Î»rx_flagÀ­¸ß
-                                                //¼ÆÊıµ½Í£Ö¹Î»ÖĞ¼äÊ±£¬Í£Ö¹½ÓÊÕ¹ı³Ì
+        if(start_flag)                          //æ£€æµ‹åˆ°èµ·å§‹ä½
+            recv_flag <= 1'b1;                    //è¿›å…¥æ¥æ”¶è¿‡ç¨‹ï¼Œæ ‡å¿—ä½rx_flagæ‹‰é«˜
+                                                //è®¡æ•°åˆ°åœæ­¢ä½ä¸­é—´æ—¶ï¼Œåœæ­¢æ¥æ”¶è¿‡ç¨‹
         else if((rx_cnt == 4'd9) && (clk_cnt == BPS_CNT/2) && num_cnt==CNT_NUM-1)
-            recv_flag <= 1'b0;                    //½ÓÊÕ¹ı³Ì½áÊø£¬±êÖ¾Î»rx_flagÀ­µÍ
+            recv_flag <= 1'b0;                    //æ¥æ”¶è¿‡ç¨‹ç»“æŸï¼Œæ ‡å¿—ä½rx_flagæ‹‰ä½
         else
             recv_flag <= recv_flag;
     end
@@ -149,10 +132,10 @@ end
 //*****************************************************
 //**                    main code
 //*****************************************************
-//²¶»ñ½ÓÊÕ¶Ë¿ÚÏÂ½µÑØ(ÆğÊ¼Î»)£¬µÃµ½Ò»¸öÊ±ÖÓÖÜÆÚµÄÂö³åĞÅºÅ
+//æ•è·æ¥æ”¶ç«¯å£ä¸‹é™æ²¿(èµ·å§‹ä½)ï¼Œå¾—åˆ°ä¸€ä¸ªæ—¶é’Ÿå‘¨æœŸçš„è„‰å†²ä¿¡å·
 assign  start_flag = uart_rxd_d1 & (~uart_rxd_d0);    
 
-//¶ÔUART½ÓÊÕ¶Ë¿ÚµÄÊı¾İÑÓ³ÙÁ½¸öÊ±ÖÓÖÜÆÚ
+//å¯¹UARTæ¥æ”¶ç«¯å£çš„æ•°æ®å»¶è¿Ÿä¸¤ä¸ªæ—¶é’Ÿå‘¨æœŸ
 always @(posedge sys_clk or negedge sys_rst_n) begin 
     if (!sys_rst_n) begin 
         uart_rxd_d0 <= 1'b0;
@@ -164,64 +147,64 @@ always @(posedge sys_clk or negedge sys_rst_n) begin
     end   
 end
 
-//µ±Âö³åĞÅºÅstart_flagµ½´ïÊ±£¬½øÈë½ÓÊÕ¹ı³Ì           
+//å½“è„‰å†²ä¿¡å·start_flagåˆ°è¾¾æ—¶ï¼Œè¿›å…¥æ¥æ”¶è¿‡ç¨‹           
 always @(posedge sys_clk or negedge sys_rst_n) begin         
     if (!sys_rst_n)                                  
         rx_flag <= 1'b0;
     else begin
-        if(start_flag)                          //¼ì²âµ½ÆğÊ¼Î»
-            rx_flag <= 1'b1;                    //½øÈë½ÓÊÕ¹ı³Ì£¬±êÖ¾Î»rx_flagÀ­¸ß
-                                                //¼ÆÊıµ½Í£Ö¹Î»ÖĞ¼äÊ±£¬Í£Ö¹½ÓÊÕ¹ı³Ì
+        if(start_flag)                          //æ£€æµ‹åˆ°èµ·å§‹ä½
+            rx_flag <= 1'b1;                    //è¿›å…¥æ¥æ”¶è¿‡ç¨‹ï¼Œæ ‡å¿—ä½rx_flagæ‹‰é«˜
+                                                //è®¡æ•°åˆ°åœæ­¢ä½ä¸­é—´æ—¶ï¼Œåœæ­¢æ¥æ”¶è¿‡ç¨‹
         else if((rx_cnt == 4'd9) && (clk_cnt == BPS_CNT/2))
-            rx_flag <= 1'b0;                    //½ÓÊÕ¹ı³Ì½áÊø£¬±êÖ¾Î»rx_flagÀ­µÍ
+            rx_flag <= 1'b0;                    //æ¥æ”¶è¿‡ç¨‹ç»“æŸï¼Œæ ‡å¿—ä½rx_flagæ‹‰ä½
         else
             rx_flag <= rx_flag;
     end
 end
 
-//½øÈë½ÓÊÕ¹ı³Ìºó£¬Æô¶¯ÏµÍ³Ê±ÖÓ¼ÆÊıÆ÷
+//è¿›å…¥æ¥æ”¶è¿‡ç¨‹åï¼Œå¯åŠ¨ç³»ç»Ÿæ—¶é’Ÿè®¡æ•°å™¨
 always @(posedge sys_clk or negedge sys_rst_n) begin         
     if (!sys_rst_n)                             
         clk_cnt <= 16'd0;                                  
-    else if ( rx_flag ) begin                   //´¦ÓÚ½ÓÊÕ¹ı³Ì
+    else if ( rx_flag ) begin                   //å¤„äºæ¥æ”¶è¿‡ç¨‹
         if (clk_cnt < BPS_CNT - 1)
             clk_cnt <= clk_cnt + 1'b1;
         else
-            clk_cnt <= 16'd0;               	//¶ÔÏµÍ³Ê±ÖÓ¼ÆÊı´ïÒ»¸ö²¨ÌØÂÊÖÜÆÚºóÇåÁã
+            clk_cnt <= 16'd0;               	//å¯¹ç³»ç»Ÿæ—¶é’Ÿè®¡æ•°è¾¾ä¸€ä¸ªæ³¢ç‰¹ç‡å‘¨æœŸåæ¸…é›¶
     end
     else                              				
-        clk_cnt <= 16'd0;						//½ÓÊÕ¹ı³Ì½áÊø£¬¼ÆÊıÆ÷ÇåÁã
+        clk_cnt <= 16'd0;						//æ¥æ”¶è¿‡ç¨‹ç»“æŸï¼Œè®¡æ•°å™¨æ¸…é›¶
 end
 
-//½øÈë½ÓÊÕ¹ı³Ìºó£¬Æô¶¯½ÓÊÕÊı¾İ¼ÆÊıÆ÷
+//è¿›å…¥æ¥æ”¶è¿‡ç¨‹åï¼Œå¯åŠ¨æ¥æ”¶æ•°æ®è®¡æ•°å™¨
 always @(posedge sys_clk or negedge sys_rst_n) begin         
     if (!sys_rst_n)                             
         rx_cnt  <= 4'd0;
-    else if ( rx_flag ) begin                   //´¦ÓÚ½ÓÊÕ¹ı³Ì
-        if (clk_cnt == BPS_CNT - 1)				//¶ÔÏµÍ³Ê±ÖÓ¼ÆÊı´ïÒ»¸ö²¨ÌØÂÊÖÜÆÚ
-            rx_cnt <= rx_cnt + 1'b1;			//´ËÊ±½ÓÊÕÊı¾İ¼ÆÊıÆ÷¼Ó1
+    else if ( rx_flag ) begin                   //å¤„äºæ¥æ”¶è¿‡ç¨‹
+        if (clk_cnt == BPS_CNT - 1)				//å¯¹ç³»ç»Ÿæ—¶é’Ÿè®¡æ•°è¾¾ä¸€ä¸ªæ³¢ç‰¹ç‡å‘¨æœŸ
+            rx_cnt <= rx_cnt + 1'b1;			//æ­¤æ—¶æ¥æ”¶æ•°æ®è®¡æ•°å™¨åŠ 1
         else
             rx_cnt <= rx_cnt;       
     end
 	 else
-        rx_cnt  <= 4'd0;						//½ÓÊÕ¹ı³Ì½áÊø£¬¼ÆÊıÆ÷ÇåÁã
+        rx_cnt  <= 4'd0;						//æ¥æ”¶è¿‡ç¨‹ç»“æŸï¼Œè®¡æ•°å™¨æ¸…é›¶
 end
 
-//¸ù¾İ½ÓÊÕÊı¾İ¼ÆÊıÆ÷À´¼Ä´æuart½ÓÊÕ¶Ë¿ÚÊı¾İ
+//æ ¹æ®æ¥æ”¶æ•°æ®è®¡æ•°å™¨æ¥å¯„å­˜uartæ¥æ”¶ç«¯å£æ•°æ®
 always @(posedge sys_clk or negedge sys_rst_n) begin 
     if ( !sys_rst_n)  
         rxdata <= 8'd0;                                     
-    else if(rx_flag)                            //ÏµÍ³´¦ÓÚ½ÓÊÕ¹ı³Ì
-        if (clk_cnt == BPS_CNT/2) begin         //ÅĞ¶ÏÏµÍ³Ê±ÖÓ¼ÆÊıÆ÷¼ÆÊıµ½Êı¾İÎ»ÖĞ¼ä
+    else if(rx_flag)                            //ç³»ç»Ÿå¤„äºæ¥æ”¶è¿‡ç¨‹
+        if (clk_cnt == BPS_CNT/2) begin         //åˆ¤æ–­ç³»ç»Ÿæ—¶é’Ÿè®¡æ•°å™¨è®¡æ•°åˆ°æ•°æ®ä½ä¸­é—´
             case ( rx_cnt )
-             4'd1 : rxdata[0] <= uart_rxd_d1;   //¼Ä´æÊı¾İÎ»×îµÍÎ»
+             4'd1 : rxdata[0] <= uart_rxd_d1;   //å¯„å­˜æ•°æ®ä½æœ€ä½ä½
              4'd2 : rxdata[1] <= uart_rxd_d1;
              4'd3 : rxdata[2] <= uart_rxd_d1;
              4'd4 : rxdata[3] <= uart_rxd_d1;
              4'd5 : rxdata[4] <= uart_rxd_d1;
              4'd6 : rxdata[5] <= uart_rxd_d1;
              4'd7 : rxdata[6] <= uart_rxd_d1;
-             4'd8 : rxdata[7] <= uart_rxd_d1;   //¼Ä´æÊı¾İÎ»×î¸ßÎ»
+             4'd8 : rxdata[7] <= uart_rxd_d1;   //å¯„å­˜æ•°æ®ä½æœ€é«˜ä½
              default:;                                    
             endcase
         end
@@ -231,15 +214,15 @@ always @(posedge sys_clk or negedge sys_rst_n) begin
         rxdata <= 8'd0;
 end
 
-//Êı¾İ½ÓÊÕÍê±Ïºó¸ø³ö±êÖ¾ĞÅºÅ²¢¼Ä´æÊä³ö½ÓÊÕµ½µÄÊı¾İ
+//æ•°æ®æ¥æ”¶å®Œæ¯•åç»™å‡ºæ ‡å¿—ä¿¡å·å¹¶å¯„å­˜è¾“å‡ºæ¥æ”¶åˆ°çš„æ•°æ®
 /*always @(posedge sys_clk or negedge sys_rst_n) begin        
     if (!sys_rst_n) begin
         uart_data <= 8'd0;                               
         uart_done <= 1'b0;
     end
-    else if(rx_cnt == 4'd9) begin               //½ÓÊÕÊı¾İ¼ÆÊıÆ÷¼ÆÊıµ½Í£Ö¹Î»Ê±           
-        uart_data <= rxdata;                    //¼Ä´æÊä³ö½ÓÊÕµ½µÄÊı¾İ
-        uart_done <= 1'b1;                      //²¢½«½ÓÊÕÍê³É±êÖ¾Î»À­¸ß
+    else if(rx_cnt == 4'd9) begin               //æ¥æ”¶æ•°æ®è®¡æ•°å™¨è®¡æ•°åˆ°åœæ­¢ä½æ—¶           
+        uart_data <= rxdata;                    //å¯„å­˜è¾“å‡ºæ¥æ”¶åˆ°çš„æ•°æ®
+        uart_done <= 1'b1;                      //å¹¶å°†æ¥æ”¶å®Œæˆæ ‡å¿—ä½æ‹‰é«˜
     end
     else begin
         uart_data <= 8'd0;                                   
